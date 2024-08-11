@@ -1,9 +1,10 @@
+import 'package:felling_listen/screens/home_screen.dart';
 import 'package:felling_listen/screens/product_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const HoneScreen());
 }
 
 class MyApp extends StatefulWidget {
@@ -59,21 +60,25 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                     cartController.forward();
 
                   }
-              ).followPath(path: manager.path ,duration: 2.seconds, curve: Curves.easeInCubic);
+              ).followPath(path: manager.path ,duration: 2.seconds, curve: Curves.easeIn);
             },
-          )
+          ),
+          Center(
+              child: Container(
+                key: manager.myKey,
+                color: Colors.red, width: 20,height: 20,)),
         ],),
-        floatingActionButton:FloatingActionButton(key: manager.cartKey, onPressed: () {}, child: const Icon(Icons.add_shopping_cart),).animate(
-          autoPlay: false,
-          controller: cartController,
-          onComplete: (controller){
-            controller.reset();
-          }
+        floatingActionButton:FloatingActionButton(key: manager.cartKey, onPressed: () {}, child: const Icon(Icons.add_shopping_cart).animate(
+            autoPlay: false,
+            controller: cartController,
+            onComplete: (controller){
+              controller.reset();
+            }
         ).moveY(
-          begin: 0,
-          end: -20,
-          duration: 500.ms
-        ).shake(),
+            begin: 0,
+            end: -20,
+            duration: 500.ms
+        ).shake(),)
       ),
     );
   }
@@ -84,6 +89,7 @@ class ManagerAnimation {
   ManagerAnimation(this.imageController);
   var imageKey = List.generate(20, (index) => GlobalKey());
   var cartKey = GlobalKey();
+  var myKey = GlobalKey();
   late final AnimationController imageController ;
   late ValueNotifier imageSize = ValueNotifier(const Size(0,0));
   late Offset imagePosition = Offset.zero;
@@ -101,14 +107,17 @@ class ManagerAnimation {
 
   void runAnimation(int index){
     final imageContext = imageKey[index].currentContext;
-
+    final myPosition = (myKey.currentContext!.findRenderObject() as RenderBox).localToGlobal(Offset.zero);
     final cartPosition = (cartKey.currentContext!.findRenderObject() as RenderBox).localToGlobal(Offset.zero);
-    final cartBottomPosition = cartKey.currentContext!.size!.bottomRight(cartPosition);
+    final cartBottomPosition = myKey.currentContext!.size!.center(cartPosition);
     final imagePosition = (imageContext!.findRenderObject() as RenderBox).localToGlobal(Offset.zero);
 
     imageSize.value = imageContext.size;
     print(imageSize.value);
-    path = Path()..moveTo(imagePosition.dx, imagePosition.dy)..relativeLineTo(-20, -20)..lineTo(cartBottomPosition.dx - imageContext.size!.width - 5, cartBottomPosition.dy - imageContext.size!.height - 5);
+    path = Path()
+      ..moveTo(imagePosition.dx, imagePosition.dy)
+      ..relativeLineTo(-20, -20)
+      ..lineTo(cartBottomPosition.dx - imageContext.size!.width  , cartBottomPosition.dy - imageContext.size!.height );
 
     imageController.forward();
   }
