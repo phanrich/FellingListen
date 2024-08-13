@@ -1,5 +1,5 @@
+import 'package:felling_listen/screens/detail_screen.dart';
 import 'package:felling_listen/screens/list_vertical_screen.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -15,7 +15,8 @@ class _HoneScreenState extends State<HoneScreen> with TickerProviderStateMixin{
   late final AnimationController controller = AnimationController(vsync: this);
   late final AnimationController cartController = AnimationController(vsync: this);
   late final manager = ManagerAnimation1(controller);
-
+  late List<ItemModel> newItems = [];
+  int totalQuantity = 0;
   @override
   void dispose() {
     controller.dispose();
@@ -30,7 +31,16 @@ class _HoneScreenState extends State<HoneScreen> with TickerProviderStateMixin{
       home: Scaffold(
         body: Stack(
           children: [
-            ListVerticalScreen(manager: manager,),
+            ListVerticalScreen(manager: manager, addItem: (items){
+              int tempQuantity = 0;
+              for(var item in items){
+                tempQuantity += item.quantity;
+              }
+              totalQuantity = tempQuantity;
+              newItems = items;
+              setState(() {});
+
+            },),
             ListenableBuilder(
               builder: (context,_) {
                 return SizedBox(
@@ -47,9 +57,9 @@ class _HoneScreenState extends State<HoneScreen> with TickerProviderStateMixin{
                   ).scale(
                       begin: const Offset(1, 1),
                       end: Offset.zero,
-                      duration: 2.seconds,
+                      duration: 500.ms,
                       alignment: Alignment.bottomRight,
-                      delay: 500.ms
+                      delay: 100.ms
                   ),
                 ).animate(
                     controller: controller,
@@ -59,22 +69,41 @@ class _HoneScreenState extends State<HoneScreen> with TickerProviderStateMixin{
                       manager.reset();
                       cartController.forward();
                     }
-                ).followPath(path: manager.path , duration: 2.seconds , curve: Curves.easeInCubic);
+                ).followPath(path: manager.path , duration: 500.ms , curve: Curves.easeInCubic);
               }, listenable: manager.avatarSize,
             )
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          key: manager.cartKey,
-          onPressed: () {  },
-          child: const Icon(Icons.person).animate(
-              controller: cartController,
-              autoPlay: false,
-              onComplete: (ctr){
-                ctr.reset();
-              }
-          ).moveY(begin: 0,end: -20 , duration: 500.ms).shake(),
-        )
+        floatingActionButton: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FloatingActionButton(
+                key: manager.cartKey,
+                onPressed: () {
+                  Navigator.of(manager.cartKey.currentContext!).push(
+                    MaterialPageRoute(builder: (_) => DetailScreen(items: newItems,))
+                  );
+                },
+                child: const Icon(Icons.person)
+              ),
+            ),
+            Positioned(
+              right: 5,
+              top: 0,
+              child: Container(height: 20,width: 20,decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.red,
+              ),child: Center(child: Text("${totalQuantity}")),),
+            )
+          ],
+        ).animate(
+            controller: cartController,
+            autoPlay: false,
+            onComplete: (ctr){
+              ctr.reset();
+            }
+        ).moveY(begin: 0,end: -20 , duration: 500.ms).shake(),
       ),
     );
   }

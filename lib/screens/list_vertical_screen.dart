@@ -1,20 +1,34 @@
 import 'package:felling_listen/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
-class ListVerticalScreen extends StatelessWidget {
+class ListVerticalScreen extends StatefulWidget {
   final ManagerAnimation1 manager;
-   ListVerticalScreen({super.key , required this.manager});
+  final Function(List<ItemModel>) addItem;
+   const ListVerticalScreen({super.key , required this.manager , required this.addItem});
 
-   final listDemo = [
-    1,2,3,4,5,6,8,9,10,
-    1,2,3,4,5,6,8,9,10,
-    1,2,3,4,5,6,8,9,10,
-  ];
+  @override
+  State<ListVerticalScreen> createState() => _ListVerticalScreenState();
+}
+
+class _ListVerticalScreenState extends State<ListVerticalScreen> {
+
+   late List<ItemModel> items = [
+     ItemModel(id: "1", name: "1", quantity: 1, price: 100),
+     ItemModel(id: "2", name: "2", quantity: 1,price: 200),
+     ItemModel(id: "3", name: "3", quantity: 1,price: 300),
+     ItemModel(id: "4", name: "4", quantity: 1,price: 120),
+     ItemModel(id: "5", name: "5", quantity: 1,price: 150)
+   ];
+   late List<ItemModel> listDemo = [];
+
+   void addItem(String id, int quantity) {
+
+   }
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-        itemCount: 10,
+        itemCount: items.length,
         itemBuilder: (context , index){
           return Container(
             color: Colors.blueGrey,
@@ -22,21 +36,43 @@ class ListVerticalScreen extends StatelessWidget {
             child: ListTile(
               onTap: (){
                 /// selected item
-                manager.runAnimationAddToCart(index);
-                print("run animation start");
+                widget.manager.runAnimationAddToCart(index);
+                int count = listDemo.indexWhere((element) => element.id == items[index].id);
+                if(count != -1){
+                  int quantity = listDemo[index].quantity;
+                  quantity++;
+                  ItemModel newItem = ItemModel(id: items[index].id, name: items[index].name, quantity: quantity , price: items[index].price);
+                  listDemo[index] = newItem;
+                  print("add items with quantity==== > ${listDemo.length}");
+                }else{
+                  listDemo.add(items[index]);
+                  print("add items without quantity==== > $listDemo");
+
+                }
+                widget.addItem(listDemo);
+                setState(() {});
               },
               leading: Container(
-                key: manager.avatarKey[index],
+                key: widget.manager.avatarKey[index],
                 width: 50,
                 decoration: const BoxDecoration(
                   color: Colors.amber,
                   shape: BoxShape.circle
                 ),
               ),
-              title: Text(listDemo[index].toString().toUpperCase()),
-              subtitle: Text(listDemo[index].toString().toLowerCase()),
+              title: Text(items[index].name.toString().toUpperCase()),
+              subtitle: Text(items[index].quantity.toString().toLowerCase()),
             ),
           );
         });
   }
+}
+
+class ItemModel {
+  final String id;
+  final String name;
+  final int quantity;
+  final int price;
+
+  ItemModel({required this.id, required this.name, required this.quantity, required this.price});
 }
