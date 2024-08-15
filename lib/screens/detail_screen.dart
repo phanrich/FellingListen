@@ -18,10 +18,8 @@ class _DetailScreenState extends State<DetailScreen> {
 
   totalPrice(){
     for(var item in newItems){
-      total += item.price;
+      total += item.price * item.quantity;
     }
-    setState(() {
-    });
   }
   @override
   void initState() {
